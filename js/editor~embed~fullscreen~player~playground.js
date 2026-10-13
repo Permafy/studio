@@ -39698,7 +39698,7 @@ __webpack_require__.r(__webpack_exports__);
     colour: controlColors.primary,
     colourSecondary: controlColors.secondary,
     colourTertiary: controlColors.tertiary,
-    extensions: ['shape_loop']
+    extensions: ['shape_statement']
   });
   registerCustomBlock('sensing_currentkeypressed', {
     message0: 'current key pressed',
