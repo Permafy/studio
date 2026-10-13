@@ -20101,7 +20101,7 @@ const CustomExtensionModal = props => /*#__PURE__*/react__WEBPACK_IMPORTED_MODUL
   value: props.url,
   onChange: props.onChangeURL,
   onKeyDown: props.onKeyDown,
-  placeholder: "https://permafy.github.io/extensions/... or https://extensions.turbowarp.org/",
+  placeholder: "https://extensions.permafy.org",
   autoFocus: true
 })) : props.type === 'file' ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_2___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_2___default.a.Fragment, {
   key: props.type
