@@ -36230,7 +36230,7 @@ const manuallyTrustExtension = url => {
  * @returns {boolean} True if the extension can is trusted
  */
 const isTrustedExtensionOrigin = url => (/* Always trust the official extension repostiories */
-url.startsWith('https://extensions.turbowarp.org/') || url.startsWith('https://extensions.penguinmod.com/') || url.startsWith('https://penguinmod-extensions-gallery.vercel.app/') || url.startsWith('https://permafy.github.io/') || url.startsWith('https://permafy.github.io/extensions/') || /* Trust other people's galleries. These can be removed in the future, they will just show a pop-up on load if they are */
+url.startsWith('https://extensions.turbowarp.org/') || url.startsWith('https://extensions.penguinmod.com/') || url.startsWith('https://penguinmod-extensions-gallery.vercel.app/') || url.startsWith('https://permafy.github.io/') || url.startsWith('https://permafy.github.io/extensions/') || url.startsWith('https://extensions.permafy.org/') || /* Trust other people's galleries. These can be removed in the future, they will just show a pop-up on load if they are */
 url.startsWith('https://sharkpools-extensions.vercel.app/') ||
 // SharkPool
 url.startsWith('https://sharkpool-sp.github.io/SharkPools-Extensions/') ||
@@ -43634,11 +43634,11 @@ const menuItems = [{
   description: 'More operators like nand, nor, character code to character, reading multiple lined text line by line, etc.',
   featured: true
 }, {
-  name: 'My Blocks+',
+  name: 'Customs',
   extensionId: 'https://sharkpools-extensions.vercel.app/extension-code/My-Blocks-Plus.js',
   iconURL: _penguinmod_extensions_myBlocksPlus_svg__WEBPACK_IMPORTED_MODULE_96___default.a,
   tags: ['penguinmod', 'categoryexpansion'],
-  description: 'Create private or global custom blocks with custom inputs, colors, and more!',
+  description: 'Merged custom blocks: vanilla My Blocks + My Blocks+ extras in one category.',
   extDeveloper: 'SharkPool, CST1229, 0znzw',
   featured: true
 }, {
@@ -46316,7 +46316,7 @@ const lists = function lists() {
   return "\n    <category\n        name=\"Lists\"\n        id=\"lists\"\n        colour=\"#FF661A\"\n        secondaryColour=\"#FF5500\"\n        custom=\"LIST\">\n    </category>\n    ";
 };
 const myBlocks = function myBlocks() {
-  return "\n    <category\n        name=\"%{BKY_CATEGORY_MYBLOCKS}\"\n        id=\"myBlocks\"\n        colour=\"#FF6680\"\n        secondaryColour=\"#FF4D6A\"\n        custom=\"PROCEDURE\">\n    </category>\n    ";
+  return "\n    <category\n        name=\"Customs\"\n        id=\"myBlocks\"\n        colour=\"#FF6680\"\n        secondaryColour=\"#FF4D6A\"\n        custom=\"PROCEDURE\">\n    </category>\n    ";
 };
 const liveTests = function liveTests() {
   return "\n    <category name=\"Live Tests\" id=\"liveTests\" colour=\"#FF0000\" secondaryColour=\"#FF0000\">\n        <block type=\"procedures_call\">\n            <mutation proccode=\"tw:debugger;\" argumentids=\"[]\" warp=\"false\" returns=\"null\" edited=\"true\" optype=\"null\"></mutation>\n        </block>\n        ".concat(blockSeparator, "\n        <block type=\"operator_checkboxBoolean\"></block>\n        <block type=\"control_fieldbutton\"></block>\n        <block type=\"motion_mutatorCheckboxTest\"></block>\n        ").concat(blockSeparator, "\n        <block type=\"control_dualblock\"></block>\n        <block type=\"test_spread\"></block>\n        <block type=\"looks_setVertTransform\">\n            <value name=\"PERCENT\">\n                <shadow type=\"math_number\"><field name=\"NUM\">0</field></shadow>\n            </value>\n        </block>\n        <block type=\"looks_setHorizTransform\">\n            <value name=\"PERCENT\">\n                <shadow type=\"math_number\"><field name=\"NUM\">0</field></shadow>\n            </value>\n        </block>\n    </category>\n    ");
