@@ -3090,20 +3090,41 @@ const resolveScriptURLs = url => {
       }
     } catch (e) {}
   };
+  const addPermafyRawFallback = candidate => {
+    const normalized = candidate.replace(/\/+$/, '');
+    let path = '';
+    if (normalized.startsWith('https://extensions.permafy.org/extensions/extensions/')) {
+      path = normalized.slice('https://extensions.permafy.org/extensions/extensions/'.length);
+    } else if (normalized.startsWith('https://extensions.permafy.org/extensions/')) {
+      path = normalized.slice('https://extensions.permafy.org/extensions/'.length);
+    } else if (normalized.startsWith('https://permafy.github.io/extensions/')) {
+      path = normalized.slice('https://permafy.github.io/extensions/'.length);
+    } else if (normalized.startsWith('https://permafy.github.io/')) {
+      path = normalized.slice('https://permafy.github.io/'.length);
+    }
+    if (!path || path === normalized) return;
+    const rawPath = `static/extensions/${path}`;
+    push(`https://raw.githubusercontent.com/Permafy/extensions/main/${rawPath}`);
+    push(`https://raw.githubusercontent.com/permafy/extensions/main/${rawPath}`);
+  };
   push(url);
   const normalized = url.replace(/\/+$/, '');
   if (normalized.includes('https://extensions.permafy.org/extensions/extensions/')) {
     push(normalized.replace('https://extensions.permafy.org/extensions/extensions/', 'https://permafy.github.io/extensions/'));
     push(normalized.replace('https://extensions.permafy.org/extensions/extensions/', 'https://extensions.permafy.org/extensions/'));
+    addPermafyRawFallback(normalized.replace('https://extensions.permafy.org/extensions/extensions/', 'https://permafy.github.io/extensions/'));
   }
   if (normalized.includes('https://permafy.github.io/extensions/extensions/')) {
     push(normalized.replace('https://permafy.github.io/extensions/extensions/', 'https://permafy.github.io/extensions/'));
+    addPermafyRawFallback(normalized.replace('https://permafy.github.io/extensions/extensions/', 'https://permafy.github.io/extensions/'));
   }
   if (normalized.includes('https://extensions.permafy.org/extensions/')) {
     push(normalized.replace('https://extensions.permafy.org/extensions/', 'https://permafy.github.io/extensions/'));
+    addPermafyRawFallback(normalized.replace('https://extensions.permafy.org/extensions/', 'https://extensions.permafy.org/extensions/'));
   }
   if (normalized.includes('https://permafy.github.io/extensions/')) {
     push(normalized.replace('https://permafy.github.io/extensions/', 'https://extensions.permafy.org/extensions/'));
+    addPermafyRawFallback(normalized);
   }
   return candidates;
 };
