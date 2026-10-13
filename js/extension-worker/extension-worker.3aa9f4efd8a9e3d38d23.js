@@ -104,20 +104,82 @@ const {
 } = __webpack_require__(/*! ./tw-extension-worker-context */ "./node_modules/scratch-vm/src/extension-support/tw-extension-worker-context.js");
 const createTranslate = __webpack_require__(/*! ./tw-l10n */ "./node_modules/scratch-vm/src/extension-support/tw-l10n.js");
 const translate = createTranslate(null);
-const loadScripts = url => {
-  if (isWorker) {
-    importScripts(url);
-  } else {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.onload = () => resolve();
-      script.onerror = () => {
-        reject(new Error("Error in sandboxed script: ".concat(url, ". Check the console for more information.")));
-      };
-      script.src = url;
-      document.body.appendChild(script);
-    });
+const resolveScriptURLs = url => {
+  const candidates = [];
+  const seen = new Set();
+  const push = candidate => {
+    if (!candidate) return;
+    try {
+      const normalized = new URL(candidate, typeof location !== 'undefined' ? location.href : 'https://example.com/').href;
+      if (!seen.has(normalized)) {
+        seen.add(normalized);
+        candidates.push(normalized);
+      }
+    } catch (e) {}
+  };
+  push(url);
+  const normalized = url.replace(/\/+$/, '');
+  if (normalized.includes('https://extensions.permafy.org/extensions/extensions/')) {
+    push(normalized.replace('https://extensions.permafy.org/extensions/extensions/', 'https://permafy.github.io/extensions/'));
+    push(normalized.replace('https://extensions.permafy.org/extensions/extensions/', 'https://extensions.permafy.org/extensions/'));
   }
+  if (normalized.includes('https://permafy.github.io/extensions/extensions/')) {
+    push(normalized.replace('https://permafy.github.io/extensions/extensions/', 'https://permafy.github.io/extensions/'));
+  }
+  if (normalized.includes('https://extensions.permafy.org/extensions/')) {
+    push(normalized.replace('https://extensions.permafy.org/extensions/', 'https://permafy.github.io/extensions/'));
+  }
+  if (normalized.includes('https://permafy.github.io/extensions/')) {
+    push(normalized.replace('https://permafy.github.io/extensions/', 'https://extensions.permafy.org/extensions/'));
+  }
+  return candidates;
+};
+const loadScripts = url => {
+  const urls = resolveScriptURLs(url);
+  if (isWorker) {
+    let error;
+    for (const candidate of urls) {
+      try {
+        importScripts(candidate);
+        return;
+      } catch (e) {
+        error = e;
+      }
+    }
+    throw error || new Error("Error in sandboxed script: ".concat(url, ". Check the console for more information."));
+  }
+  return new Promise((resolve, reject) => {
+    let index = 0;
+    const attempt = () => {
+      const candidate = urls[index];
+      if (!candidate) {
+        reject(new Error("Error in sandboxed script: ".concat(url, ". Check the console for more information.")));
+        return;
+      }
+      index += 1;
+      const script = document.createElement('script');
+      const onDone = () => {
+        script.onload = null;
+        script.onerror = null;
+        script.onabort = null;
+      };
+      script.onload = () => {
+        onDone();
+        resolve();
+      };
+      script.onerror = () => {
+        onDone();
+        attempt();
+      };
+      script.onabort = () => {
+        onDone();
+        attempt();
+      };
+      script.src = candidate;
+      document.body.appendChild(script);
+    };
+    attempt();
+  });
 };
 class ExtensionWorker {
   constructor() {
