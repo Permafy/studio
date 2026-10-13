@@ -25663,7 +25663,7 @@ class Blocks extends react__WEBPACK_IMPORTED_MODULE_5___default.a.Component {
       }
     }
     if (this.state.searchQuery) {
-      const searchResultsXML = Object(_lib_filter_toolbox_xml__WEBPACK_IMPORTED_MODULE_20__["default"])(this.props.toolboxXML, this.state.searchQuery, this.getSearchVariables(), this.props.intl.formatMessage(messages.NO_SEARCH_RESULTS));
+      const searchResultsXML = Object(_lib_filter_toolbox_xml__WEBPACK_IMPORTED_MODULE_20__["default"])(this.props.toolboxXML, this.state.searchQuery, this.getSearchVariables(), this.props.intl.formatMessage(messages.NO_SEARCH_RESULTS), this.getBlockSearchLabels());
       const searchResultsDocument = new DOMParser().parseFromString(searchResultsXML, 'text/xml');
       const searchCategory = searchResultsDocument.querySelector('category[id="searchResults"]');
       if (!searchCategory) {
@@ -25928,6 +25928,48 @@ class Blocks extends react__WEBPACK_IMPORTED_MODULE_5___default.a.Component {
     this.setState({
       searchQuery: event.target.value
     });
+  }
+  getBlockSearchLabels() {
+    if (this._blockSearchLabels && this._blockSearchLabels.toolboxXML === this.props.toolboxXML && this._blockSearchLabels.locale === this.props.locale) {
+      return this._blockSearchLabels.labels;
+    }
+    const toolboxDocument = new DOMParser().parseFromString(this.props.toolboxXML, 'text/xml');
+    const blockTypes = new Set(Array.from(toolboxDocument.getElementsByTagName('block')).map(block => block.getAttribute('type')).filter(Boolean));
+    const labels = {};
+    blockTypes.forEach(type => {
+      const definition = this.ScratchBlocks.Blocks[type];
+      if (!definition || typeof definition.init !== 'function') return;
+      let blockJson;
+      let mockBlock;
+      mockBlock = new Proxy({
+        jsonInit: json => {
+          blockJson = json;
+        }
+      }, {
+        get: (target, property) => {
+          if (property in target) return target[property];
+          return () => mockBlock;
+        },
+        set: (target, property, value) => {
+          target[property] = value;
+          return true;
+        }
+      });
+      try {
+        definition.init.call(mockBlock);
+      } catch (error) {
+        // Some legacy block definitions need a real workspace to initialize.
+      }
+      if (blockJson) {
+        labels[type] = Object.keys(blockJson).filter(key => /^message\d+$/.test(key)).map(key => blockJson[key]).filter(value => typeof value === 'string').join(' ');
+      }
+    });
+    this._blockSearchLabels = {
+      toolboxXML: this.props.toolboxXML,
+      locale: this.props.locale,
+      labels
+    };
+    return labels;
   }
   getSearchVariables() {
     const target = this.props.vm.editingTarget;
@@ -42104,7 +42146,8 @@ const addVariableBlock = (document, category, type, variable, fieldName) => {
   block.appendChild(field);
   category.appendChild(block);
 };
-const filterToolboxXML = (toolboxXML, query, variables, noResultsMessage) => {
+const filterToolboxXML = function filterToolboxXML(toolboxXML, query, variables, noResultsMessage) {
+  let blockLabels = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
   const normalizedQuery = normalize(query);
   const sourceDocument = new DOMParser().parseFromString(toolboxXML, 'text/xml');
   if (sourceDocument.getElementsByTagName('parsererror').length > 0) {
@@ -42121,7 +42164,8 @@ const filterToolboxXML = (toolboxXML, query, variables, noResultsMessage) => {
       const categoryName = category.getAttribute('name');
       Array.from(category.children).filter(child => child.tagName === 'block').forEach(block => {
         const type = block.getAttribute('type') || '';
-        const searchableText = "".concat(categoryName, " ").concat(type, " ").concat(block.textContent);
+        const mutationText = Array.from(block.children).filter(child => child.tagName === 'mutation').flatMap(mutation => Array.from(mutation.attributes).map(attribute => attribute.value)).join(' ');
+        const searchableText = "".concat(categoryName, " ").concat(type, " ").concat(blockLabels[type] || '', " ").concat(block.textContent, " ").concat(mutationText);
         const keywordMatch = (blockKeywords[type] || []).some(keyword => normalize(keyword).includes(normalizedQuery));
         if (normalize(searchableText).includes(normalizedQuery) || keywordMatch) {
           resultsCategory.appendChild(sourceDocument.importNode(block, true));
@@ -47535,7 +47579,7 @@ const ProjectFetcherHOC = function ProjectFetcherHOC(WrappedComponent) {
         });
       }
       let assetPromise;
-      const isScratchProject = /\/scratch\/?$/.test(location.pathname);
+      const isScratchProject = /(?:^|\/)scratch(?:\/|$)/i.test(location.pathname);
       // In case running in node...
       let projectUrl = typeof URLSearchParams === "undefined" ? null : new URLSearchParams(location.search).get("project_url");
       if (projectUrl) {
