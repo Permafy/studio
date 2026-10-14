@@ -13273,7 +13273,20 @@ class MenuBar extends react__WEBPACK_IMPORTED_MODULE_7___default.a.Component {
     }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement(react_intl__WEBPACK_IMPORTED_MODULE_3__["FormattedMessage"], {
       defaultMessage: "Advanced",
       id: "pm.menuBar.gameplaySettings"
-    })))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement(_divider_divider_jsx__WEBPACK_IMPORTED_MODULE_13__["default"], {
+    })))), this.props.onClickTheme && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement("button", {
+      className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.menuBarItem, _menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.hoverable),
+      type: "button",
+      onClick: this.props.onClickTheme,
+      title: "Toggle light and dark mode",
+      "aria-label": "Toggle light and dark mode",
+      style: {
+        background: "transparent",
+        border: 0,
+        color: "inherit",
+        font: "inherit",
+        cursor: "pointer"
+      }
+    }, "Theme"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement(_divider_divider_jsx__WEBPACK_IMPORTED_MODULE_13__["default"], {
       className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.divider)
     }), this.props.canEditTitle ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement("div", {
       className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.menuBarItem, _menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.growable)
