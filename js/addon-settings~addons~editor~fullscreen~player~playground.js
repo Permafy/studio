@@ -4445,6 +4445,28 @@ __webpack_require__.r(__webpack_exports__);
   "mediarecorder": _addons_mediarecorder_manifest_entry_js__WEBPACK_IMPORTED_MODULE_13__["default"],
   "drag-drop": _addons_drag_drop_manifest_entry_js__WEBPACK_IMPORTED_MODULE_14__["default"],
   "debugger": _addons_debugger_manifest_entry_js__WEBPACK_IMPORTED_MODULE_15__["default"],
+  "data-category-tweaks-v2": {
+    editorOnly: true,
+    name: "Data category tweaks",
+    description: "Provides tweaks for the Data (Variables) block category.",
+    credits: [{
+      name: "GarboMuffin"
+    }],
+    userscripts: [{
+      url: "userscript.js"
+    }],
+    settings: [{
+      dynamic: true,
+      name: "Move data blocks above variables list",
+      id: "moveReportersDown",
+      type: "boolean",
+      default: true
+    }],
+    tags: ["editor", "codeEditor", "recommended"],
+    enabledByDefault: true,
+    dynamicEnable: true,
+    dynamicDisable: true
+  },
   "mute-project": _addons_mute_project_manifest_entry_js__WEBPACK_IMPORTED_MODULE_16__["default"],
   "vol-slider": _addons_vol_slider_manifest_entry_js__WEBPACK_IMPORTED_MODULE_17__["default"],
   "clones": _addons_clones_manifest_entry_js__WEBPACK_IMPORTED_MODULE_19__["default"],
