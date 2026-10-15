@@ -1,15 +1,15 @@
 (function () {
     const config = {
-        title: 'Welcome to Dash!',
-        banner: '/images/dash-welcome-poster.svg',
-        bannerAlt: 'Dash welcome poster',
-        message: 'Dash is based on TurboWarp and adds things like JSON category, console mode, new blocks, extensions, editor customization, and other features.',
-        languageNote: 'Dash features are available only in English and Russian (at the moment).',
-        credits: 'Dash was made by damir2809, Den4ik-12, scratch_craft_2, AnonimKing24, and other contributors.',
+        title: 'Welcome to Permafy!',
+        banner: '/images/PermafyBanner.png',
+        bannerAlt: 'Permafy welcome poster/banner, made by aynonyaz.',
+        message: 'Permafy is a fork of PenguinMod and it adds things like new categories, extensions, blocks, and more.',
+        languageNote: 'Permafy features are available only in English and Russian (at the moment).',
+        credits: 'Permafy was made by aynonyaz (yes only one person) and is maintained by aynonyaz aswell.',
         checkbox: "Don't show this again",
         button: 'Continue'
     };
-    const preferenceKey = 'permafy:hide-dash-welcome-v2';
+    const preferenceKey = 'permafy:hide-pf-welcome-v2';
 
     const readPreference = () => {
         try {
@@ -39,7 +39,7 @@
                 padding: 24px;
                 border: 1px solid rgba(25, 37, 51, .18);
                 border-radius: 8px;
-                background: #fff;
+                background: #4d4a4a;
                 color: #202b36;
                 box-shadow: 0 18px 60px rgba(0, 0, 0, .25);
                 font: 16px/1.5 system-ui, sans-serif;
@@ -77,7 +77,7 @@
                 padding: 0 16px;
                 border: 0;
                 border-radius: 4px;
-                background: #ff8b4a;
+                background: #82b8ff;
                 color: #fff;
                 font: inherit;
                 font-weight: 600;
@@ -85,7 +85,7 @@
             }
             .permafy-welcome-dialog button:focus-visible,
             .permafy-welcome-dialog input:focus-visible {
-                outline: 3px solid #276ef1;
+                outline: 3px solid #9dbfff;
                 outline-offset: 2px;
             }
         `;
@@ -121,15 +121,15 @@
         dialog.querySelector('[data-welcome-language]').textContent = config.languageNote;
         dialog.querySelector('[data-welcome-credits]').textContent = config.credits;
         const terms = dialog.querySelector('[data-welcome-terms]');
-        terms.append('By using Dash, you agree to its ');
+        terms.append('By using Permafy (the links can be down/outdated), you agree to its ');
         const termsLink = document.createElement('a');
-        termsLink.href = 'https://dashblocks.org/tos';
+        termsLink.href = 'https://rules.permafy.org/tos';
         termsLink.textContent = 'Terms of Service';
         termsLink.target = '_blank';
         termsLink.rel = 'noopener noreferrer';
         terms.append(termsLink, ' and ');
         const privacyLink = document.createElement('a');
-        privacyLink.href = 'https://dashblocks.org/privacy';
+        privacyLink.href = 'https://rules.permafy.org/privacy';
         privacyLink.textContent = 'Privacy Policy';
         privacyLink.target = '_blank';
         privacyLink.rel = 'noopener noreferrer';

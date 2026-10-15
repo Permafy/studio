@@ -170,7 +170,7 @@
         if (!instance.workspace || !instance.props || typeof instance.props.updateToolboxState !== 'function') return;
         if (!instance.ScratchBlocks || !instance.ScratchBlocks.Blocks) return;
         const toolboxXML = instance.props.toolboxXML || '';
-        if (instance.__permafyJoinToolboxXML === toolboxXML) return;
+        if (instance.__permafyProcessedToolboxXML === toolboxXML) return;
         const missingJoinBlocks = [
             'operator_join',
             'operator_join3',
@@ -179,29 +179,62 @@
             'operator_tabCharacter'
         ].filter(type =>
             instance.ScratchBlocks.Blocks[type] && !toolboxXML.includes(`type="${type}"`));
-        if (!missingJoinBlocks.length) return;
 
         const document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
-        const category = Array.from(document.getElementsByTagName('category')).find(item =>
+        const operatorCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'operators');
-        if (!category) return;
+        let toolboxChanged = false;
 
-        missingJoinBlocks.forEach(type => {
-            const block = document.createElement('block');
-            block.setAttribute('type', type);
-            if (type === 'operator_join') {
-                ['STRING1', 'STRING2'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
-            } else if (type === 'operator_join3') {
-                ['STRING1', 'STRING2', 'STRING3'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
-            } else if (type === 'operator_expandablejoininputs') {
-                const mutation = document.createElement('mutation');
-                mutation.setAttribute('inputcount', '2');
-                block.appendChild(mutation);
-                ['INPUT1', 'INPUT2'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
+        if (operatorCategory) {
+            missingJoinBlocks.forEach(type => {
+                const block = document.createElement('block');
+                block.setAttribute('type', type);
+                if (type === 'operator_join') {
+                    ['STRING1', 'STRING2'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
+                } else if (type === 'operator_join3') {
+                    ['STRING1', 'STRING2', 'STRING3'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
+                } else if (type === 'operator_expandablejoininputs') {
+                    const mutation = document.createElement('mutation');
+                    mutation.setAttribute('inputcount', '2');
+                    block.appendChild(mutation);
+                    ['INPUT1', 'INPUT2'].forEach((name, index) => addTextInput(document, block, name, `text ${index + 1}`));
+                }
+                operatorCategory.appendChild(block);
+                toolboxChanged = true;
+            });
+        }
+
+        const eventsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'events');
+        if (eventsCategory) {
+            const hatOrder = [
+                'event_whenflagclicked',
+                'event_whenstopclicked',
+                'event_whenpausebuttonclicked',
+                'event_whenplaybuttonclicked'
+            ];
+            const hats = hatOrder.map(type => {
+                let block = Array.from(eventsCategory.children).find(child =>
+                    child.tagName === 'block' && child.getAttribute('type') === type);
+                if (!block && instance.ScratchBlocks.Blocks[type]) {
+                    block = document.createElement('block');
+                    block.setAttribute('type', type);
+                    toolboxChanged = true;
+                }
+                return block;
+            }).filter(Boolean);
+            const currentTopHats = Array.from(eventsCategory.children)
+                .filter(child => child.tagName === 'block')
+                .slice(0, hats.length)
+                .map(block => block.getAttribute('type'));
+            if (hats.some((block, index) => currentTopHats[index] !== block.getAttribute('type'))) {
+                hats.slice().reverse().forEach(block => eventsCategory.insertBefore(block, eventsCategory.firstChild));
+                toolboxChanged = true;
             }
-            category.appendChild(block);
-        });
-        instance.__permafyJoinToolboxXML = toolboxXML;
+        }
+
+        instance.__permafyProcessedToolboxXML = toolboxXML;
+        if (!toolboxChanged) return;
         instance.props.updateToolboxState(document.documentElement.outerHTML);
     };
 
@@ -231,6 +264,46 @@
             if (!isInSettings && item.textContent.trim() === 'Theme' && item.style.display !== 'none') {
                 item.style.display = 'none';
             }
+        });
+    };
+
+    const patchProjectPageNavigation = () => {
+        const communityButton = app.querySelector('button[class*="community-button"]') ||
+            Array.from(app.querySelectorAll('button')).find(button =>
+                button.textContent.trim().toLowerCase() === 'see project page');
+        if (!communityButton) return;
+
+        const fiberKey = Object.keys(communityButton).find(key =>
+            key.startsWith('__reactFiber$') || key.startsWith('__reactInternalInstance$'));
+        let fiber = fiberKey ? communityButton[fiberKey] : null;
+        let menuBarInstance = null;
+        const watcherInstances = [];
+        while (fiber) {
+            const instance = fiber.stateNode;
+            if (instance && typeof instance.handleClickSeeCommunity === 'function' && instance.props) {
+                menuBarInstance = instance;
+            }
+            if (instance && typeof instance.waitForUpdate === 'function' && typeof instance.fulfill === 'function') {
+                watcherInstances.push(instance);
+            }
+            fiber = fiber.return;
+        }
+        if (!menuBarInstance || !menuBarInstance.props.projectId) return;
+
+        const projectId = String(menuBarInstance.props.projectId);
+        if (projectId === '0') return;
+        const querySource = new URLSearchParams(window.location.search).get('source');
+        const isScratchProject = /(?:^|\/)scratch(?:\/|$)/i.test(window.location.pathname) || querySource === 'scratch';
+        const source = isScratchProject ? 'scratch' : 'penguinmod';
+        const projectUrl = `https://projects.permafy.org/${source}/${encodeURIComponent(projectId)}/player`;
+        watcherInstances.forEach(instance => {
+            if (instance.__permafyProjectPageNavigationPatched) return;
+            instance.fulfill = function () {
+                if (this.__permafyProjectPageNavigationStarted) return;
+                this.__permafyProjectPageNavigationStarted = true;
+                this.setState({waiting: false}, () => window.location.assign(projectUrl));
+            };
+            instance.__permafyProjectPageNavigationPatched = true;
         });
     };
 
@@ -266,6 +339,7 @@
         updateForkButton();
         hideTopbarThemeButton();
         patchBlockSearch();
+        patchProjectPageNavigation();
     });
     observer.observe(app, {attributes: true, childList: true, subtree: true});
     updateThemeMenu();
@@ -273,4 +347,5 @@
     updateForkButton();
     hideTopbarThemeButton();
     patchBlockSearch();
+    patchProjectPageNavigation();
 }());
