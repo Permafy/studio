@@ -56772,7 +56772,7 @@ const updateMetrics = function updateMetrics(metrics) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "static/assets/4b701263121b18b9cceb5402bb6f9321.png";
+module.exports = __webpack_require__.p + "static/title.png";
 
 /***/ }),
 
