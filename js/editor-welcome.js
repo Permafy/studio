@@ -37,7 +37,7 @@
                 max-height: min(720px, 100%);
                 overflow: auto;
                 padding: 24px;
-                border: 1px solid rgba(25, 37, 51, .18);
+                border: 1px solid rgb(255, 255, 255);
                 border-radius: 8px;
                 background: #4d4a4a;
                 color: #ffffff;
@@ -78,7 +78,7 @@
                 border: 0;
                 border-radius: 4px;
                 background: #82b8ff;
-                color: #fff;
+                color: #ffffff;
                 font: inherit;
                 font-weight: 600;
                 cursor: pointer;
