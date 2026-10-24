@@ -40,7 +40,7 @@
                 border: 1px solid rgba(25, 37, 51, .18);
                 border-radius: 8px;
                 background: #4d4a4a;
-                color: #202b36;
+                color: #ffffff;
                 box-shadow: 0 18px 60px rgba(0, 0, 0, .25);
                 font: 16px/1.5 system-ui, sans-serif;
             }
