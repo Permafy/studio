@@ -12989,7 +12989,7 @@ class MenuBar extends react__WEBPACK_IMPORTED_MODULE_7___default.a.Component {
       className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.scratchLogo, _menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.clickable),
       id: window.location.pathname.includes("editor.html") ? "gui-editor-logo" : "gui-main-logo",
       draggable: false,
-      src: this.props.logo || _static_title_png__WEBPACK_IMPORTED_MODULE_51___default.a,
+      src: this.props.logo || _static_title_png__WEBPACK_IMPORTED_MODULE_51___default.a + '?v=20261024',
       onClick: this.handleClickLogo
     })), this.props.compileErrors.length > 0 && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement("div", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_7___default.a.createElement("div", {
       className: classnames__WEBPACK_IMPORTED_MODULE_0___default()(_menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.menuBarItem, _menu_bar_css__WEBPACK_IMPORTED_MODULE_36___default.a.hoverable, {
@@ -13434,7 +13434,7 @@ MenuBar.propTypes = {
   vm: prop_types__WEBPACK_IMPORTED_MODULE_4___default.a.instanceOf(scratch_vm__WEBPACK_IMPORTED_MODULE_8___default.a).isRequired
 };
 MenuBar.defaultProps = {
-  logo: _static_title_png__WEBPACK_IMPORTED_MODULE_51___default.a,
+  logo: _static_title_png__WEBPACK_IMPORTED_MODULE_51___default.a + '?v=20261024',
   usernameLoggedIn: false,
   onShare: () => {}
 };
