@@ -4,7 +4,7 @@
         banner: '/images/PermafyBanner.png',
         bannerAlt: 'Permafy welcome poster/banner, made by aynonyaz.',
         message: 'Permafy is a fork of PenguinMod and it adds things like new categories, extensions, blocks, and more.',
-        languageNote: 'Permafy features are available only in English and Russian (at the moment).',
+        languageNote: 'Permafy features are available only in English and Spanish (at the moment).',
         credits: 'Permafy was made by aynonyaz (yes only one person) and is maintained by aynonyaz aswell.',
         checkbox: "Don't show this again",
         button: 'Continue'
