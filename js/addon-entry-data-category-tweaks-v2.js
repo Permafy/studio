@@ -26,16 +26,21 @@
           return !addon.self.disabled && addon.settings.get("moveReportersDown") ? moveReportersDown(items) : items;
         };
 
-        const oldShow = ScratchBlocks.Flyout.prototype.show;
-        ScratchBlocks.Flyout.prototype.show = function(flyoutDefinition) {
-          this.targetWorkspace.registerToolboxCategoryCallback("VARIABLE", workspace => updateCategory(workspace, ScratchBlocks.VariableCategory));
-          this.targetWorkspace.registerToolboxCategoryCallback("LIST", workspace => updateCategory(workspace, ScratchBlocks.VariableCategory.ListCategory));
-          return oldShow.call(this, flyoutDefinition);
-        };
+        const oldShow = ScratchBlocks.Flyout && ScratchBlocks.Flyout.prototype && ScratchBlocks.Flyout.prototype.show;
+        if (oldShow) {
+          ScratchBlocks.Flyout.prototype.show = function(flyoutDefinition) {
+            const targetWorkspace = this.targetWorkspace || (typeof ScratchBlocks.getMainWorkspace === "function" ? ScratchBlocks.getMainWorkspace() : null);
+            if (targetWorkspace && typeof targetWorkspace.registerToolboxCategoryCallback === "function") {
+              targetWorkspace.registerToolboxCategoryCallback("VARIABLE", workspace => updateCategory(workspace, ScratchBlocks.VariableCategory));
+              targetWorkspace.registerToolboxCategoryCallback("LIST", workspace => updateCategory(workspace, ScratchBlocks.VariableCategory.ListCategory));
+            }
+            return oldShow.call(this, flyoutDefinition);
+          };
+        }
 
         const refreshToolbox = () => {
-          if (vm.editingTarget) vm.emitWorkspaceUpdate();
-          const workspace = addon.tab.traps.getWorkspace();
+          if (vm && vm.editingTarget) vm.emitWorkspaceUpdate();
+          const workspace = typeof addon.tab.traps.getWorkspace === "function" ? addon.tab.traps.getWorkspace() : (typeof ScratchBlocks.getMainWorkspace === "function" ? ScratchBlocks.getMainWorkspace() : null);
           if (workspace && typeof workspace.refreshToolboxSelection_ === "function") workspace.refreshToolboxSelection_();
         };
         addon.settings.addEventListener("change", refreshToolbox);
