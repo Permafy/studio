@@ -27,7 +27,7 @@ https://nitrobolt.org/
 Used for the Assets tab.
 
 ## Scratch Addons
-https://scratchaddons.com/
+https://scratchaddons.com/ or https://scratchaddons.github.io/
 Used for the Addons.
 
 ## Dash/DashBlocks

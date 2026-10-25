@@ -77,6 +77,12 @@
         const switchTheme = event => {
             event.preventDefault();
             event.stopPropagation();
+            const themeIcon = app.querySelector('[class*="menu-bar_moon-icon"], [class*="menu-bar_sun-icon"]');
+            const themeButton = themeIcon && themeIcon.closest('[class*="menu-bar_menu-bar-item"]')?.querySelector('button');
+            if (themeButton) {
+                themeButton.click();
+                return;
+            }
             const nextTheme = document.body.getAttribute('theme') === 'dark' ? 'light' : 'dark';
             document.body.setAttribute('theme', nextTheme);
             try {
@@ -184,6 +190,13 @@
         const operatorCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'operators');
         let toolboxChanged = false;
+
+        const myBlocksPlusCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'SPmbpCST');
+        if (myBlocksPlusCategory) {
+            myBlocksPlusCategory.remove();
+            toolboxChanged = true;
+        }
 
         if (operatorCategory) {
             missingJoinBlocks.forEach(type => {
