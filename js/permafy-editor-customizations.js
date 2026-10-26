@@ -77,18 +77,13 @@
         const switchTheme = event => {
             event.preventDefault();
             event.stopPropagation();
-            const themeIcon = app.querySelector('[class*="menu-bar_moon-icon"], [class*="menu-bar_sun-icon"]');
-            const themeButton = themeIcon && themeIcon.closest('[class*="menu-bar_menu-bar-item"]')?.querySelector('button');
+            const themeButton = app.querySelector('button[aria-label="Toggle light and dark mode"], button[title="Toggle light and dark mode"]') ||
+                (() => {
+                    const themeIcon = app.querySelector('[class*="menu-bar_moon-icon"], [class*="menu-bar_sun-icon"]');
+                    return themeIcon && themeIcon.closest('[class*="menu-bar_menu-bar-item"]')?.querySelector('button');
+                })();
             if (themeButton) {
                 themeButton.click();
-                return;
-            }
-            const nextTheme = document.body.getAttribute('theme') === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('theme', nextTheme);
-            try {
-                localStorage.setItem('tw:theme', nextTheme);
-            } catch (error) {
-                // Theme still changes for this page when storage is unavailable.
             }
         };
         toggle.addEventListener('click', switchTheme);
