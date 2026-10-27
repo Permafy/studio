@@ -31,7 +31,7 @@ https://scratchaddons.com/ or https://scratchaddons.github.io/
 Used for the Addons.
 
 ## Dash/DashBlocks
-https://dashblocks.org/ or https://dashblocks.github.io/
+https://dashblocks.org/
 Used for some of the Topbar features, some other features, a sort of banner that welcomes you, and other cool features. Also gave me an idea to put a "Recent Commits/Pushes or What's new square on the menu".
 
 ## Gandi IDE

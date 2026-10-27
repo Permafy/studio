@@ -139,6 +139,19 @@
         block.appendChild(value);
     };
 
+    const debuggerLogProcedures = [
+        '\u200B\u200Blog\u200B\u200B %s',
+        '\u200B\u200Bwarn\u200B\u200B %s',
+        '\u200B\u200Berror\u200B\u200B %s'
+    ];
+    const jsonBlockTypes = [
+        'contains', 'length', 'stringify_spacer', 'assign', 'get_by_path', 'set_by_path',
+        'array_empty', 'array_expandable', 'array_split', 'array_item_of', 'array_item_no_of',
+        'array_in_front_of', 'array_behind', 'array_at', 'array_replace', 'array_delete',
+        'object_empty', 'object_split', 'object_item_of', 'object_contains_key', 'object_entries',
+        'object_set', 'object_delete'
+    ];
+
     const patchBlocksInstance = instance => {
         if (typeof instance.getBlockSearchLabels === 'function' && !instance.__permafySearchPatched) {
             const getLabels = instance.getBlockSearchLabels.bind(instance);
@@ -170,6 +183,17 @@
 
         if (!instance.workspace || !instance.props || typeof instance.props.updateToolboxState !== 'function') return;
         if (!instance.ScratchBlocks || !instance.ScratchBlocks.Blocks) return;
+        const extensionManager = instance.props.vm && instance.props.vm.extensionManager;
+        if (extensionManager) {
+            if (!extensionManager.isBuiltinExtension('json')) {
+                extensionManager.addBuiltinExtension('json', window.PermafyJSONExtension);
+            }
+            ['json', 'lmsutilsblocks'].forEach(extensionId => {
+                if (extensionManager.isBuiltinExtension(extensionId) && !extensionManager.isExtensionLoaded(extensionId)) {
+                    extensionManager.loadExtensionIdSync(extensionId);
+                }
+            });
+        }
         const toolboxXML = instance.props.toolboxXML || '';
         if (instance.__permafyProcessedToolboxXML === toolboxXML) return;
         const missingJoinBlocks = [
@@ -214,6 +238,84 @@
 
         const eventsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'events');
+        let jsonCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            ['extension_json', 'jgJSON', 'json'].includes(item.getAttribute('id')));
+        if (!jsonCategory) {
+            jsonCategory = document.createElement('category');
+            jsonCategory.setAttribute('id', 'json');
+            jsonCategory.setAttribute('name', 'JSON');
+            jsonCategory.setAttribute('colour', '#748BEE');
+            jsonCategory.setAttribute('secondaryColour', '#5C6FBE');
+            jsonBlockTypes.forEach(opcode => {
+                const block = document.createElement('block');
+                block.setAttribute('type', `json_${opcode}`);
+                jsonCategory.appendChild(block);
+            });
+            const variablesCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+                item.getAttribute('id') === 'variables');
+            if (variablesCategory && variablesCategory.parentNode) {
+                variablesCategory.parentNode.insertBefore(jsonCategory, variablesCategory.nextSibling);
+            } else {
+                document.documentElement.appendChild(jsonCategory);
+            }
+            toolboxChanged = true;
+        } else {
+            if (jsonCategory.getAttribute('id') !== 'json' ||
+                jsonCategory.getAttribute('colour') !== '#748BEE' ||
+                jsonCategory.getAttribute('secondaryColour') !== '#5C6FBE') {
+                jsonCategory.setAttribute('id', 'json');
+                jsonCategory.setAttribute('colour', '#748BEE');
+                jsonCategory.setAttribute('secondaryColour', '#5C6FBE');
+                toolboxChanged = true;
+            }
+        }
+
+        let consoleCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'console');
+        if (!consoleCategory) {
+            consoleCategory = document.createElement('category');
+            consoleCategory.setAttribute('id', 'console');
+            consoleCategory.setAttribute('name', 'Console');
+            consoleCategory.setAttribute('colour', '#6B8E5D');
+            consoleCategory.setAttribute('secondaryColour', '#526D47');
+            if (jsonCategory && jsonCategory.parentNode) {
+                jsonCategory.parentNode.insertBefore(consoleCategory, jsonCategory.nextSibling);
+            } else {
+                document.documentElement.appendChild(consoleCategory);
+            }
+            toolboxChanged = true;
+        } else if (consoleCategory.getAttribute('colour') !== '#6B8E5D' ||
+            consoleCategory.getAttribute('secondaryColour') !== '#526D47') {
+            consoleCategory.setAttribute('colour', '#6B8E5D');
+            consoleCategory.setAttribute('secondaryColour', '#526D47');
+            toolboxChanged = true;
+        }
+
+        const debuggerCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'a-b');
+        if (debuggerCategory) {
+            Array.from(debuggerCategory.querySelectorAll('block')).forEach(block => {
+                const procedureCode = block.querySelector('mutation')?.getAttribute('proccode');
+                if (debuggerLogProcedures.includes(procedureCode)) {
+                    const alreadyInConsole = Array.from(consoleCategory.querySelectorAll('mutation'))
+                        .some(mutation => mutation.getAttribute('proccode') === procedureCode);
+                    if (!alreadyInConsole) {
+                        consoleCategory.appendChild(block.cloneNode(true));
+                        toolboxChanged = true;
+                    }
+                    block.remove();
+                    toolboxChanged = true;
+                }
+            });
+        }
+
+        Array.from(document.getElementsByTagName('category'))
+            .filter(category => ['debug', 'extension_debug'].includes(category.getAttribute('id')))
+            .forEach(category => {
+                category.remove();
+                toolboxChanged = true;
+            });
+
         if (eventsCategory) {
             const hatOrder = [
                 'event_whenflagclicked',
@@ -221,6 +323,7 @@
                 'event_whenpausebuttonclicked',
                 'event_whenplaybuttonclicked'
             ];
+            if (hatOrder.some(type => !instance.ScratchBlocks.Blocks[type])) return;
             const hats = hatOrder.map(type => {
                 let block = Array.from(eventsCategory.children).find(child =>
                     child.tagName === 'block' && child.getAttribute('type') === type);
@@ -229,7 +332,7 @@
                     block.setAttribute('type', type);
                     toolboxChanged = true;
                 }
-                return block;
+                return block && instance.ScratchBlocks.Blocks[type] ? block : null;
             }).filter(Boolean);
             const currentTopHats = Array.from(eventsCategory.children)
                 .filter(child => child.tagName === 'block')
@@ -237,6 +340,17 @@
                 .map(block => block.getAttribute('type'));
             if (hats.some((block, index) => currentTopHats[index] !== block.getAttribute('type'))) {
                 hats.slice().reverse().forEach(block => eventsCategory.insertBefore(block, eventsCategory.firstChild));
+                toolboxChanged = true;
+            }
+
+            const openLinkType = 'lmsutilsblocks_goToLink';
+            if (instance.ScratchBlocks.Blocks[openLinkType] &&
+                !Array.from(eventsCategory.children).some(child =>
+                    child.tagName === 'block' && child.getAttribute('type') === openLinkType)) {
+                const block = document.createElement('block');
+                block.setAttribute('type', openLinkType);
+                addTextInput(document, block, 'INPUT', 'https://example.com');
+                eventsCategory.appendChild(block);
                 toolboxChanged = true;
             }
         }
