@@ -144,14 +144,6 @@
         '\u200B\u200Bwarn\u200B\u200B %s',
         '\u200B\u200Berror\u200B\u200B %s'
     ];
-    const jsonBlockTypes = [
-        'contains', 'length', 'stringify_spacer', 'assign', 'get_by_path', 'set_by_path',
-        'array_empty', 'array_expandable', 'array_split', 'array_item_of', 'array_item_no_of',
-        'array_in_front_of', 'array_behind', 'array_at', 'array_replace', 'array_delete',
-        'object_empty', 'object_split', 'object_item_of', 'object_contains_key', 'object_entries',
-        'object_set', 'object_delete'
-    ];
-
     const patchBlocksInstance = instance => {
         if (typeof instance.getBlockSearchLabels === 'function' && !instance.__permafySearchPatched) {
             const getLabels = instance.getBlockSearchLabels.bind(instance);
@@ -184,15 +176,42 @@
         if (!instance.workspace || !instance.props || typeof instance.props.updateToolboxState !== 'function') return;
         if (!instance.ScratchBlocks || !instance.ScratchBlocks.Blocks) return;
         const extensionManager = instance.props.vm && instance.props.vm.extensionManager;
-        if (extensionManager) {
-            if (!extensionManager.isBuiltinExtension('json')) {
-                extensionManager.addBuiltinExtension('json', window.PermafyJSONExtension);
-            }
-            ['json', 'lmsutilsblocks'].forEach(extensionId => {
-                if (extensionManager.isBuiltinExtension(extensionId) && !extensionManager.isExtensionLoaded(extensionId)) {
-                    extensionManager.loadExtensionIdSync(extensionId);
+        if (!extensionManager || typeof window.PermafyRegisterBlocklyDefinitions !== 'function') return;
+        if (!instance.__permafyDefinitionsReady) {
+            if (instance.__permafyDefinitionsLoading) return;
+            instance.__permafyDefinitionsLoading = true;
+            window.PermafyRegisterBlocklyDefinitions(instance.ScratchBlocks).then(() => {
+                [
+                    ['json', window.PermafyJSONExtension],
+                    ['console', window.PermafyConsoleExtension]
+                ].forEach(([id, extension]) => {
+                    if (!extensionManager.isBuiltinExtension(id)) extensionManager.addBuiltinExtension(id, extension);
+                    if (!extensionManager.isExtensionLoaded(id)) extensionManager.loadExtensionIdSync(id);
+                });
+                if (extensionManager.isBuiltinExtension('lmsutilsblocks') && !extensionManager.isExtensionLoaded('lmsutilsblocks')) {
+                    extensionManager.loadExtensionIdSync('lmsutilsblocks');
                 }
+                instance.__permafyDefinitionsReady = true;
+                instance.__permafyDefinitionsLoading = false;
+                const updatedToolbox = instance.getToolboxXML();
+                if (updatedToolbox) instance.props.updateToolboxState(updatedToolbox);
+            }).catch(error => {
+                instance.__permafyDefinitionsLoading = false;
+                console.error('Unable to register Permafy block definitions', error);
             });
+            return;
+        }
+
+        if (typeof instance.getToolboxXML === 'function' && !instance.__permafyDebugCategoryFiltered) {
+            const getToolboxXML = instance.getToolboxXML.bind(instance);
+            instance.getToolboxXML = () => {
+                const xml = getToolboxXML();
+                if (!xml) return xml;
+                const toolbox = new DOMParser().parseFromString(xml, 'text/xml');
+                toolbox.querySelectorAll('category[id="debug"]').forEach(category => category.remove());
+                return toolbox.documentElement.outerHTML;
+            };
+            instance.__permafyDebugCategoryFiltered = true;
         }
         const toolboxXML = instance.props.toolboxXML || '';
         if (instance.__permafyProcessedToolboxXML === toolboxXML) return;
@@ -238,58 +257,18 @@
 
         const eventsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'events');
-        let jsonCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            ['extension_json', 'jgJSON', 'json'].includes(item.getAttribute('id')));
-        if (!jsonCategory) {
-            jsonCategory = document.createElement('category');
-            jsonCategory.setAttribute('id', 'json');
-            jsonCategory.setAttribute('name', 'JSON');
-            jsonCategory.setAttribute('colour', '#748BEE');
-            jsonCategory.setAttribute('secondaryColour', '#5C6FBE');
-            jsonBlockTypes.forEach(opcode => {
-                const block = document.createElement('block');
-                block.setAttribute('type', `json_${opcode}`);
-                jsonCategory.appendChild(block);
-            });
-            const variablesCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-                item.getAttribute('id') === 'variables');
-            if (variablesCategory && variablesCategory.parentNode) {
-                variablesCategory.parentNode.insertBefore(jsonCategory, variablesCategory.nextSibling);
-            } else {
-                document.documentElement.appendChild(jsonCategory);
-            }
-            toolboxChanged = true;
-        } else {
-            if (jsonCategory.getAttribute('id') !== 'json' ||
-                jsonCategory.getAttribute('colour') !== '#748BEE' ||
-                jsonCategory.getAttribute('secondaryColour') !== '#5C6FBE') {
-                jsonCategory.setAttribute('id', 'json');
-                jsonCategory.setAttribute('colour', '#748BEE');
-                jsonCategory.setAttribute('secondaryColour', '#5C6FBE');
-                toolboxChanged = true;
-            }
-        }
-
-        let consoleCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+        const toolboxCategories = window.PermafyCreateToolboxCategories(document);
+        const jsonCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'json');
+        const consoleCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'console');
-        if (!consoleCategory) {
-            consoleCategory = document.createElement('category');
-            consoleCategory.setAttribute('id', 'console');
-            consoleCategory.setAttribute('name', 'Console');
-            consoleCategory.setAttribute('colour', '#6B8E5D');
-            consoleCategory.setAttribute('secondaryColour', '#526D47');
-            if (jsonCategory && jsonCategory.parentNode) {
-                jsonCategory.parentNode.insertBefore(consoleCategory, jsonCategory.nextSibling);
-            } else {
-                document.documentElement.appendChild(consoleCategory);
-            }
+        const replaceCategory = (existing, replacement) => {
+            if (existing) existing.parentNode.replaceChild(replacement, existing);
+            else document.documentElement.appendChild(replacement);
             toolboxChanged = true;
-        } else if (consoleCategory.getAttribute('colour') !== '#6B8E5D' ||
-            consoleCategory.getAttribute('secondaryColour') !== '#526D47') {
-            consoleCategory.setAttribute('colour', '#6B8E5D');
-            consoleCategory.setAttribute('secondaryColour', '#526D47');
-            toolboxChanged = true;
-        }
+        };
+        replaceCategory(jsonCategory, toolboxCategories[0]);
+        replaceCategory(consoleCategory, toolboxCategories[1]);
 
         const debuggerCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'a-b');
@@ -310,7 +289,7 @@
         }
 
         Array.from(document.getElementsByTagName('category'))
-            .filter(category => ['debug', 'extension_debug'].includes(category.getAttribute('id')))
+            .filter(category => category.getAttribute('id') === 'debug')
             .forEach(category => {
                 category.remove();
                 toolboxChanged = true;
@@ -367,7 +346,9 @@
             let fiber = fiberKey ? input[fiberKey] : null;
             while (fiber) {
                 const instance = fiber.stateNode;
-                if (instance && typeof instance.getBlockSearchLabels === 'function') {
+                if (instance && instance.workspace && instance.props &&
+                    typeof instance.props.updateToolboxState === 'function' &&
+                    typeof instance.getBlockSearchLabels === 'function') {
                     patchBlocksInstance(instance);
                     break;
                 }

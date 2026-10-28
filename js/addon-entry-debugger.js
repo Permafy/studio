@@ -1591,6 +1591,13 @@ const removeAllChildren = element => {
     }
   });
   const vm = addon.tab.traps.vm;
+  vm.runtime.on("PERMAFY_CONSOLE_LOG", ({text, type}) => {
+    logMessage(text, null, type || "log");
+  });
+  vm.runtime.on("PERMAFY_CONSOLE_CLEAR", () => {
+    if (logsTab) logsTab.clearLogs();
+    messagesLoggedBeforeLogsTabLoaded.length = 0;
+  });
   await new Promise((resolve, reject) => {
     if (vm.editingTarget) return resolve();
     vm.runtime.once("PROJECT_LOADED", resolve);
