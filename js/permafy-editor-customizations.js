@@ -144,6 +144,18 @@
         '\u200B\u200Bwarn\u200B\u200B %s',
         '\u200B\u200Berror\u200B\u200B %s'
     ];
+    const sanitizeToolboxXML = toolboxXML => {
+        if (!toolboxXML) return toolboxXML;
+        const document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        Array.from(document.getElementsByTagName('category')).forEach(category => {
+            const id = category.getAttribute('id');
+            if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
+                category.remove();
+            }
+        });
+        return document.documentElement.outerHTML;
+    };
     const patchBlocksInstance = instance => {
         if (typeof instance.getBlockSearchLabels === 'function' && !instance.__permafySearchPatched) {
             const getLabels = instance.getBlockSearchLabels.bind(instance);
@@ -178,6 +190,11 @@
         const extensionManager = instance.props.vm && instance.props.vm.extensionManager;
         if (!extensionManager || typeof window.PermafyRegisterBlocklyDefinitions !== 'function') return;
         if (!instance.__permafyDefinitionsReady) {
+            const initialToolboxXML = instance.props.toolboxXML || (typeof instance.getToolboxXML === 'function' ? instance.getToolboxXML() : '');
+            const sanitizedToolboxXML = sanitizeToolboxXML(initialToolboxXML);
+            if (sanitizedToolboxXML && sanitizedToolboxXML !== initialToolboxXML) {
+                instance.props.updateToolboxState(sanitizedToolboxXML);
+            }
             if (instance.__permafyDefinitionsLoading) return;
             instance.__permafyDefinitionsLoading = true;
             window.PermafyRegisterBlocklyDefinitions(instance.ScratchBlocks).then(() => {
