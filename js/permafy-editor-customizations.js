@@ -219,16 +219,14 @@
             item.getAttribute('id') === 'operators');
         let toolboxChanged = false;
 
-        const customsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            item.getAttribute('id') === 'customs' || item.getAttribute('id') === 'custom' ||
-            item.getAttribute('id') === 'procedures' || item.getAttribute('id') === 'myBlocks' ||
-            item.getAttribute('id') === 'myBlocksPlus');
-        if (customsCategory) {
-            customsCategory.setAttribute('name', 'Customs');
-            customsCategory.setAttribute('id', 'customs');
-            customsCategory.setAttribute('custom', 'PROCEDURE');
-            toolboxChanged = true;
-        }
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        Array.from(document.getElementsByTagName('category')).forEach(category => {
+            const id = category.getAttribute('id');
+            if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
+                category.remove();
+                toolboxChanged = true;
+            }
+        });
 
         if (operatorCategory) {
             missingJoinBlocks.forEach(type => {
@@ -252,24 +250,17 @@
         const eventsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'events');
         const toolboxCategories = window.PermafyCreateToolboxCategories(document);
-        const jsonCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            item.getAttribute('id') === 'json');
-        const consoleCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            item.getAttribute('id') === 'console');
-        const replaceCategory = (existing, replacement) => {
-            if (existing) existing.parentNode.replaceChild(replacement, existing);
-            else document.documentElement.appendChild(replacement);
+        const realToolboxCategories = Array.isArray(toolboxCategories) ? toolboxCategories.filter(Boolean) : [];
+        realToolboxCategories.forEach(category => {
+            document.documentElement.appendChild(category);
             toolboxChanged = true;
-        };
-        replaceCategory(jsonCategory, toolboxCategories[0]);
-        replaceCategory(consoleCategory, toolboxCategories[1]);
-        if (toolboxCategories[2] && customsCategory) {
-            replaceCategory(customsCategory, toolboxCategories[2]);
-        }
+        });
 
         const debuggerCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'a-b');
-        if (debuggerCategory) {
+        const consoleCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'console');
+        if (debuggerCategory && consoleCategory) {
             Array.from(debuggerCategory.querySelectorAll('block')).forEach(block => {
                 const procedureCode = block.querySelector('mutation')?.getAttribute('proccode');
                 if (debuggerLogProcedures.includes(procedureCode)) {
