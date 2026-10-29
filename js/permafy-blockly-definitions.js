@@ -164,7 +164,8 @@
             this.setOutput(true, 'Object');
         });
 
-        global.__permafyBlocklyDefinitionsPromise = loadScript('/js/permafy-blocks-json.js')
+        global.__permafyBlocklyDefinitionsPromise = loadScript('/js/permafy-extensions.js')
+            .then(() => loadScript('/js/permafy-blocks-json.js'))
             .then(() => loadScript('/js/permafy-blocks-console.js'));
         return global.__permafyBlocklyDefinitionsPromise;
     };
