@@ -147,7 +147,7 @@
     const sanitizeToolboxXML = toolboxXML => {
         if (!toolboxXML) return toolboxXML;
         const document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
-        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
         Array.from(document.getElementsByTagName('category')).forEach(category => {
             const id = category.getAttribute('id');
             if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
@@ -236,7 +236,7 @@
             item.getAttribute('id') === 'operators');
         let toolboxChanged = false;
 
-        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
         Array.from(document.getElementsByTagName('category')).forEach(category => {
             const id = category.getAttribute('id');
             if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
