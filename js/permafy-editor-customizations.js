@@ -220,10 +220,13 @@
         let toolboxChanged = false;
 
         const customsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            item.getAttribute('id') === 'customs' || item.getAttribute('id') === 'custom' || item.getAttribute('id') === 'procedures');
+            item.getAttribute('id') === 'customs' || item.getAttribute('id') === 'custom' ||
+            item.getAttribute('id') === 'procedures' || item.getAttribute('id') === 'myBlocks' ||
+            item.getAttribute('id') === 'myBlocksPlus');
         if (customsCategory) {
             customsCategory.setAttribute('name', 'Customs');
             customsCategory.setAttribute('id', 'customs');
+            customsCategory.setAttribute('custom', 'PROCEDURE');
             toolboxChanged = true;
         }
 

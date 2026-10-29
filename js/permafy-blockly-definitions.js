@@ -107,12 +107,7 @@
                     <sep gap="36" />
                     <block type="console_of" />
                 </category>
-                <category name="Customs" id="customs" colour="#FFBF00" secondaryColour="#CC9900">
-                    <block type="procedures_definition" />
-                    <block type="procedures_callnoreturn" />
-                    <block type="procedures_callreturn" />
-                    <block type="procedures_ifreturn" />
-                </category>
+                <category name="Customs" id="customs" colour="#FFBF00" secondaryColour="#CC9900" custom="PROCEDURE"></category>
             </xml>`;
         const parsed = new DOMParser().parseFromString(xml, 'text/xml');
         return Array.from(parsed.documentElement.children, category => document.importNode(category, true));
@@ -161,12 +156,12 @@
         });
         extension(Blockly, 'output_array', function () {
             this.setInputsInline(true);
-            this.setOutputShape(Blockly.OUTPUT_SHAPE_SQUARE);
+            this.setOutputShape(Blockly.OUTPUT_SHAPE_ROUND);
             this.setOutput(true, 'Array');
         });
         extension(Blockly, 'output_object', function () {
             this.setInputsInline(true);
-            this.setOutputShape(Blockly.OUTPUT_SHAPE_PLUS);
+            this.setOutputShape(Blockly.OUTPUT_SHAPE_ROUND);
             this.setOutput(true, 'Object');
         });
 
