@@ -181,16 +181,6 @@
             if (instance.__permafyDefinitionsLoading) return;
             instance.__permafyDefinitionsLoading = true;
             window.PermafyRegisterBlocklyDefinitions(instance.ScratchBlocks).then(() => {
-                [
-                    ['json', window.PermafyJSONExtension],
-                    ['console', window.PermafyConsoleExtension]
-                ].forEach(([id, extension]) => {
-                    if (!extensionManager.isBuiltinExtension(id)) extensionManager.addBuiltinExtension(id, extension);
-                    if (!extensionManager.isExtensionLoaded(id)) extensionManager.loadExtensionIdSync(id);
-                });
-                if (extensionManager.isBuiltinExtension('lmsutilsblocks') && !extensionManager.isExtensionLoaded('lmsutilsblocks')) {
-                    extensionManager.loadExtensionIdSync('lmsutilsblocks');
-                }
                 instance.__permafyDefinitionsReady = true;
                 instance.__permafyDefinitionsLoading = false;
                 const updatedToolbox = instance.getToolboxXML();
@@ -229,10 +219,11 @@
             item.getAttribute('id') === 'operators');
         let toolboxChanged = false;
 
-        const myBlocksPlusCategory = Array.from(document.getElementsByTagName('category')).find(item =>
-            item.getAttribute('id') === 'SPmbpCST');
-        if (myBlocksPlusCategory) {
-            myBlocksPlusCategory.remove();
+        const customsCategory = Array.from(document.getElementsByTagName('category')).find(item =>
+            item.getAttribute('id') === 'customs' || item.getAttribute('id') === 'custom' || item.getAttribute('id') === 'procedures');
+        if (customsCategory) {
+            customsCategory.setAttribute('name', 'Customs');
+            customsCategory.setAttribute('id', 'customs');
             toolboxChanged = true;
         }
 
@@ -269,6 +260,9 @@
         };
         replaceCategory(jsonCategory, toolboxCategories[0]);
         replaceCategory(consoleCategory, toolboxCategories[1]);
+        if (toolboxCategories[2] && customsCategory) {
+            replaceCategory(customsCategory, toolboxCategories[2]);
+        }
 
         const debuggerCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'a-b');

@@ -107,6 +107,12 @@
                     <sep gap="36" />
                     <block type="console_of" />
                 </category>
+                <category name="Customs" id="customs" colour="#FFBF00" secondaryColour="#CC9900">
+                    <block type="procedures_definition" />
+                    <block type="procedures_callnoreturn" />
+                    <block type="procedures_callreturn" />
+                    <block type="procedures_ifreturn" />
+                </category>
             </xml>`;
         const parsed = new DOMParser().parseFromString(xml, 'text/xml');
         return Array.from(parsed.documentElement.children, category => document.importNode(category, true));
@@ -164,8 +170,7 @@
             this.setOutput(true, 'Object');
         });
 
-        global.__permafyBlocklyDefinitionsPromise = loadScript('/js/permafy-extensions.js')
-            .then(() => loadScript('/js/permafy-blocks-json.js'))
+        global.__permafyBlocklyDefinitionsPromise = loadScript('/js/permafy-blocks-json.js')
             .then(() => loadScript('/js/permafy-blocks-console.js'));
         return global.__permafyBlocklyDefinitionsPromise;
     };
