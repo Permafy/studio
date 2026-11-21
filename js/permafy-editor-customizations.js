@@ -146,8 +146,14 @@
     ];
     const sanitizeToolboxXML = toolboxXML => {
         if (!toolboxXML) return toolboxXML;
-        const document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
-        const blockedCategoryIds = new Set(['debug', 'a-b', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        let document;
+        try {
+            document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
+            if (document.querySelector('parsererror')) return toolboxXML;
+        } catch (error) {
+            return toolboxXML;
+        }
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
         Array.from(document.getElementsByTagName('category')).forEach(category => {
             const id = category.getAttribute('id');
             if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
@@ -214,9 +220,14 @@
             instance.getToolboxXML = () => {
                 const xml = getToolboxXML();
                 if (!xml) return xml;
-                const toolbox = new DOMParser().parseFromString(xml, 'text/xml');
-                toolbox.querySelectorAll('category[id="debug"]').forEach(category => category.remove());
-                return toolbox.documentElement.outerHTML;
+                try {
+                    const toolbox = new DOMParser().parseFromString(xml, 'text/xml');
+                    if (toolbox.querySelector('parsererror')) return xml;
+                    toolbox.querySelectorAll('category[id="debug"]').forEach(category => category.remove());
+                    return toolbox.documentElement.outerHTML;
+                } catch (error) {
+                    return xml;
+                }
             };
             instance.__permafyDebugCategoryFiltered = true;
         }
@@ -231,12 +242,18 @@
         ].filter(type =>
             instance.ScratchBlocks.Blocks[type] && !toolboxXML.includes(`type="${type}"`));
 
-        const document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
+        let document;
+        try {
+            document = new DOMParser().parseFromString(toolboxXML, 'text/xml');
+            if (document.querySelector('parsererror')) return;
+        } catch (error) {
+            return;
+        }
         const operatorCategory = Array.from(document.getElementsByTagName('category')).find(item =>
             item.getAttribute('id') === 'operators');
         let toolboxChanged = false;
 
-        const blockedCategoryIds = new Set(['debug', 'a-b', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
+        const blockedCategoryIds = new Set(['debug', 'a-b', 'json', 'console', 'custom', 'customs', 'procedures', 'myBlocks', 'myBlocksPlus']);
         Array.from(document.getElementsByTagName('category')).forEach(category => {
             const id = category.getAttribute('id');
             if (blockedCategoryIds.has(id) || category.getAttribute('custom') === 'PROCEDURE') {
